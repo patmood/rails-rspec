@@ -2,9 +2,44 @@ require 'spec_helper'
 
 describe 'Admin' do
   context "on admin homepage" do
-    it "can see a list of recent posts"
-    it "can edit a post by clicking the edit link next to a post"
-    it "can delete a post by clicking the delete link next to a post"
+
+    before do
+      @post = Post.create(title: "Some Title", content: "idgaf")
+      if page.driver.respond_to?(:basic_auth)
+        page.driver.basic_auth("geek", "jock")
+      elsif page.driver.respond_to?(:basic_authorize)
+        page.driver.basic_authorize("geek", "jock")
+      elsif page.driver.respond_to?(:browser) && page.driver.browser.respond_to?(:basic_authorize)
+        page.driver.browser.basic_authorize("geek", "jock")
+      else
+        raise "I don't know how to log in!"
+      end
+    end
+
+
+
+    it "can see a list of recent posts" do
+      visit '/admin/posts'
+      page.should have_content(@post.title)
+    end
+
+    it "can edit a post by clicking the edit link next to a post" do
+      visit admin_posts_path
+      click_link('Edit')
+      fill_in 'post[title]', :with => 'Aint That'
+      fill_in 'post[content]', :with => 'Some shit...'
+      click_button('Save')
+      current_url.should == admin_post_url(@post)
+    end
+
+    it "can delete a post by clicking the delete link next to a post" do
+      visit admin_post_path
+      click_link('Delete')
+      # Require jQuery
+      # Require jQuery UI
+    end
+
+
     it "can create a new post and view it" do
        visit new_admin_post_url
 
